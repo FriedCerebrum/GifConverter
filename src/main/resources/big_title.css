@@ -1,0 +1,7 @@
+.large-text {
+    -fx-font-size: 72px;
+    -fx-font-family: Inter;
+    -fx-text-fill: #364147;
+    -fx-padding: 15px;
+    -fx-alignment: center;
+}
