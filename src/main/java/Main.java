@@ -2,6 +2,7 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -13,12 +14,19 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 
 public class Main extends Application {
+    Stage primaryStage;
+    private double x = 0, y = 0;
+    @FXML
+    private Pane top_pane;
+    @FXML
+    private Button close_btn;
     @FXML
     private Rectangle rect;
 
@@ -39,6 +47,18 @@ public class Main extends Application {
 
     @FXML
     private ImageView image_tr;
+    @FXML
+    private Button hide_button;
+    @FXML
+    void onHideButton(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.hide();
+    }
+    @FXML
+    void onCloseAction(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.close();
+    }
 
     @FXML
     void blb(ActionEvent event) {
@@ -78,6 +98,27 @@ public class Main extends Application {
 
     }
     public void initialize() {
+        top_pane.setOnMousePressed(event -> {
+            // Запоминаем начальную позицию
+            x = event.getSceneX();
+            y = event.getSceneY();
+        });
+
+        top_pane.setOnMouseDragged(event -> {
+            // Получаем текущее окно (Stage) через Scene
+            Stage stage = (Stage) top_pane.getScene().getWindow();
+
+            // Перемещаем окно на новые координаты
+            stage.setX(event.getScreenX() - x);
+            stage.setY(event.getScreenY() - y);
+        });
+
+        hide_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
+        hide_button.getStyleClass().add("hide_button");
+
+        close_btn.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
+        close_btn.getStyleClass().add("close-button");
+
         rect.setArcHeight(20);
         rect.setArcWidth(20);
         rect.setStroke(Color.GRAY);
@@ -107,7 +148,6 @@ public class Main extends Application {
         top_left_button.setOnMousePressed(event -> imageView.setTranslateY(2));
         top_left_button.setOnMouseReleased(event -> imageView.setTranslateY(0));
 
-
         gif_title.getStylesheets().add(getClass().getResource("big_title.css").toExternalForm());
         gif_title.getStyleClass().add("large-text");
         Text text = new Text("GIF");
@@ -132,9 +172,11 @@ public class Main extends Application {
             throw new RuntimeException(e);
         }
         Scene scene = new Scene(root);
+        stage.initStyle(StageStyle.UNDECORATED);
         stage.setResizable(false);
         stage.setScene(scene);
         stage.setTitle("Gif Converter");
         stage.show();
+        primaryStage = stage;
     }
 }
