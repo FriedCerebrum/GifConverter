@@ -52,8 +52,11 @@ public class Main extends Application {
     @FXML
     void onHideButton(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        stage.hide();
+        stage.setIconified(true);
+
+        System.out.println("Window is hidden");  // Лог для проверки
     }
+
     @FXML
     void onCloseAction(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -113,10 +116,10 @@ public class Main extends Application {
             stage.setY(event.getScreenY() - y);
         });
 
-        hide_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
+        hide_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles_beta.css")).toExternalForm());
         hide_button.getStyleClass().add("hide_button");
 
-        close_btn.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
+        close_btn.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles_beta.css")).toExternalForm());
         close_btn.getStyleClass().add("close-button");
 
         rect.setArcHeight(20);
@@ -148,7 +151,7 @@ public class Main extends Application {
         top_left_button.setOnMousePressed(event -> imageView.setTranslateY(2));
         top_left_button.setOnMouseReleased(event -> imageView.setTranslateY(0));
 
-        gif_title.getStylesheets().add(getClass().getResource("big_title.css").toExternalForm());
+        gif_title.getStylesheets().add(Objects.requireNonNull(getClass().getResource("big_title.css")).toExternalForm());
         gif_title.getStyleClass().add("large-text");
         Text text = new Text("GIF");
         gif_title.getChildren().add(text);
