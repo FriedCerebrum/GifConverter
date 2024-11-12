@@ -54,6 +54,15 @@ public class Main extends Application {
     private Button hide_button;
     @FXML
     private Slider slider1;
+
+    @FXML
+    private Button roundButton1;
+
+    @FXML
+    private Button roundButton2;
+
+    @FXML
+    private Button roundButton3;
     @FXML
     void onHideButton(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -112,6 +121,26 @@ public class Main extends Application {
     @FXML
     private ImageView imagePreview;
     public void initialize() {
+        Image label1Image = new Image(String.valueOf(getClass().getResource("fps.png")));
+        ImageView label1 = new ImageView(label1Image);
+        label1.setFitWidth(35);
+        label1.setFitHeight(35);
+        label1.setTranslateY(-3);
+        roundButton1.setGraphic(label1);
+
+        Image label2Image = new Image(String.valueOf(getClass().getResource("bitrate.png")));
+        ImageView label2 = new ImageView(label2Image);
+        label2.setFitWidth(35);
+        label2.setFitHeight(35);
+        roundButton2.setGraphic(label2);
+
+        Image label3Image = new Image(String.valueOf(getClass().getResource("quality.png")));
+        ImageView label3 = new ImageView(label3Image);
+        label3.setFitWidth(30);
+        label3.setFitHeight(30);
+//        label3.setTranslateY(6);
+        roundButton3.setGraphic(label3);
+
         Image preview = new Image(String.valueOf(getClass().getResource("draganddrop.png")));
         imagePreview.setImage(preview);
 
