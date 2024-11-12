@@ -5,8 +5,10 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Slider;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -18,6 +20,7 @@ import javafx.stage.StageStyle;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Objects;
 
 public class Main extends Application {
@@ -49,6 +52,8 @@ public class Main extends Application {
     private ImageView image_tr;
     @FXML
     private Button hide_button;
+    @FXML
+    private Slider slider1;
     @FXML
     void onHideButton(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -100,7 +105,16 @@ public class Main extends Application {
     void trb(ActionEvent event) {
 
     }
+    @FXML
+    void slider1OnClicked(MouseEvent event) {
+        System.out.println(slider1.getValue());
+    }
+    @FXML
+    private ImageView imagePreview;
     public void initialize() {
+        Image preview = new Image(String.valueOf(getClass().getResource("draganddrop.png")));
+        imagePreview.setImage(preview);
+
         top_pane.setOnMousePressed(event -> {
             // Запоминаем начальную позицию
             x = event.getSceneX();
@@ -116,10 +130,10 @@ public class Main extends Application {
             stage.setY(event.getScreenY() - y);
         });
 
-        hide_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles_beta.css")).toExternalForm());
-        hide_button.getStyleClass().add("hide_button");
+        hide_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
+        hide_button.getStyleClass().add("hide-button");
 
-        close_btn.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles_beta.css")).toExternalForm());
+        close_btn.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
         close_btn.getStyleClass().add("close-button");
 
         rect.setArcHeight(20);
@@ -128,18 +142,6 @@ public class Main extends Application {
         rect.setStrokeWidth(2);
         rect.setFill(Color.TRANSPARENT);
 
-        top_left_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("4buttons.css")).toExternalForm());
-        top_left_button.getStyleClass().add("button");
-
-        top_right_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("4buttons.css")).toExternalForm());
-        top_right_button.getStyleClass().add("button");
-
-        bot_left_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("4buttons.css")).toExternalForm());
-        bot_left_button.getStyleClass().add("button");
-
-        bot_right_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("4buttons.css")).toExternalForm());
-        bot_right_button.getStyleClass().add("button");
-
         Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("mtuci.png")));
         ImageView imageView = new ImageView(image);
         imageView.setPreserveRatio(false);
@@ -147,9 +149,6 @@ public class Main extends Application {
         imageView.setFitHeight(40);
         imageView.setSmooth(true);
         top_left_button.setGraphic(imageView);
-
-        top_left_button.setOnMousePressed(event -> imageView.setTranslateY(2));
-        top_left_button.setOnMouseReleased(event -> imageView.setTranslateY(0));
 
         gif_title.getStylesheets().add(Objects.requireNonNull(getClass().getResource("big_title.css")).toExternalForm());
         gif_title.getStyleClass().add("large-text");
@@ -172,9 +171,13 @@ public class Main extends Application {
         try {
             root = fxmlLoader.load();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            System.out.println("Error loading FXML: " + e.getMessage());
+            return; // добавьте возврат, если загрузка не удалась
         }
+
         Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("styles.css").toExternalForm());
         stage.initStyle(StageStyle.UNDECORATED);
         stage.setResizable(false);
         stage.setScene(scene);

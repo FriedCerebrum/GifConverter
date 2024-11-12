@@ -12,18 +12,73 @@
     -fx-text-fill: #3B3C47;
     -fx-background-radius: 0px;
 }
-.hide_button{
+.hide-button{
     -fx-background-color: #3B3C47;
     -fx-text-fill: #f4e8da;
     -fx-background-radius: 0px;
 }
-.hide_button:hover{
+.hide-button:hover{
     -fx-background-color: #8A8CA1;
     -fx-text-fill: #f4e8da;
     -fx-background-radius: 0px;
 }
-.hide_button:pressed{
+.hide-button:pressed{
     -fx-background-color: #565872;
     -fx-text-fill: #f4e8da;
     -fx-background-radius: 0px;
 }
+.four-buttons {
+    -fx-background-color: #565872;
+    -fx-border-color: #565872;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-focus-color: transparent;
+    -fx-faint-focus-color: transparent;
+    -fx-highlight-fill: transparent;
+    -fx-highlight-text-fill: inherit;
+    -fx-pressed-color: #565872;
+}
+
+.four-buttons:hover {
+    -fx-background-color: #4D4F66;
+}
+.four-buttons:pressed{
+
+}
+.three_options{
+    -fx-background-color: #72748C;
+    -fx-background-radius: 25px;
+}
+.custom-slider {
+    -fx-pref-width: 300px;             /* Задаёт предпочтительную ширину слайдера */
+    -fx-padding: 10px 0;               /* Отступы вокруг слайдера */
+}
+
+.custom-slider .track {
+    -fx-background-color: #D3D3D3;     /* Цвет трека (линии, по которой движется ползунок) */
+    -fx-background-radius: 5px;        /* Радиус скругления для трека */
+    -fx-padding: 5px;                  /* Внутренний отступ трека */
+}
+
+.custom-slider .thumb {
+    -fx-background-color: #3498db;     /* Цвет ползунка (кружка, которым управляют) */
+    -fx-background-radius: 10px;       /* Скруглённые углы для ползунка */
+    -fx-pref-width: 16px;              /* Ширина ползунка */
+    -fx-pref-height: 16px;             /* Высота ползунка */
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0, 0, 1); /* Тень вокруг ползунка */
+}
+
+.custom-slider .track:filled {
+    -fx-background-color: #8A8CA1;     /* Цвет трека, заполненного ползунком */
+    -fx-background-radius: 5px;        /* Скругление для заполненного трека */
+}
+
+.custom-slider .tick-mark {
+    -fx-stroke: #8A8CA1;               /* Цвет меток (шкалы) */
+}
+
+.custom-slider .tick-label {
+    -fx-text-fill: #8A8CA1;            /* Цвет текста меток */
+    -fx-font-size: 10px;               /* Размер текста меток */
+}
+
