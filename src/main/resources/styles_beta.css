@@ -1,0 +1,38 @@
+/* Кнопка закрытия */
+.close-button {
+    -fx-background-color: #3B3C47;
+    -fx-text-fill: #f4e8da;
+    -fx-background-radius: 0px;
+}
+
+.close-button:hover {
+    -fx-background-color: #EA2B1F;
+    -fx-background-radius: 0px;
+}
+
+.close-button:pressed {
+    -fx-background-color: #EF6351;
+    -fx-text-fill: #3B3C47;
+    -fx-background-radius: 0px;
+    -fx-effect: dropshadow(gaussian, #FF0000, 50, 0, 0, 10); /* Тень с красным цветом при нажатии */
+}
+
+/* Кнопка скрытия */
+.hide_button {
+    -fx-background-color: #3B3C47;
+    -fx-text-fill: #f4e8da;
+    -fx-background-radius: 0px;
+}
+
+.hide_button:hover {
+    -fx-background-color: #8A8CA1;
+    -fx-text-fill: #f4e8da;
+    -fx-background-radius: 0px;
+}
+
+.hide_button:pressed {
+    -fx-background-color: #565872;
+    -fx-text-fill: #f4e8da;
+    -fx-background-radius: 0px;
+    -fx-effect: dropshadow(gaussian, #3B3C47, 50, 0, 0, 10); /* Тень с красным цветом при нажатии */
+}

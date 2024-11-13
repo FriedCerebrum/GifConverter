@@ -17,6 +17,7 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import net.bramp.ffmpeg.FFmpeg;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,6 +55,10 @@ public class Main extends Application {
     private Button hide_button;
     @FXML
     private Slider slider1;
+    @FXML
+    private Slider slider2;
+    @FXML
+    private Slider slider3;
 
     @FXML
     private Button roundButton1;
@@ -64,11 +69,20 @@ public class Main extends Application {
     @FXML
     private Button roundButton3;
     @FXML
+    private Button renderButton;
+    @FXML
+    void onRenderButton(ActionEvent event) {
+        System.out.println("FPS: " + slider1.getValue());
+        System.out.println("Bitrate: " + slider2.getValue());
+        System.out.println("Quality: " + slider3.getValue());
+        FFmpeg fFmpeg = new
+    }
+    @FXML
     void onHideButton(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setIconified(true);
 
-        System.out.println("Window is hidden");  // Лог для проверки
+        System.out.println("Window is hidden");
     }
 
     @FXML

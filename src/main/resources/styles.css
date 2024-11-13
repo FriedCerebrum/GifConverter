@@ -81,4 +81,11 @@
     -fx-text-fill: #8A8CA1;            /* Цвет текста меток */
     -fx-font-size: 10px;               /* Размер текста меток */
 }
+.render-button {
+    -fx-background-color: #4D4F66;
+    -fx-text-fill: #f4e8da;
+    -fx-border-radius: 10px;
+    -fx-background-radius: 10px;
+    -fx-border-color:  #41434D;
+}
 
