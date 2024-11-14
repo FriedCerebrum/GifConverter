@@ -18,14 +18,19 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.bramp.ffmpeg.FFmpeg;
+import net.bramp.ffmpeg.FFprobe;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Path;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main extends Application {
     Stage primaryStage;
+    String ffmpegPath;
+    String ffprobePath;
     private double x = 0, y = 0;
     @FXML
     private Pane top_pane;
@@ -71,11 +76,32 @@ public class Main extends Application {
     @FXML
     private Button renderButton;
     @FXML
-    void onRenderButton(ActionEvent event) {
+    void onRenderButton(ActionEvent event) throws IOException {
         System.out.println("FPS: " + slider1.getValue());
         System.out.println("Bitrate: " + slider2.getValue());
         System.out.println("Quality: " + slider3.getValue());
-        FFmpeg fFmpeg = new
+
+        AtomicInteger atomicInteger = new AtomicInteger();
+        AtomicInteger atomicInteger1 = new AtomicInteger();
+
+        if (ffmpegPath == null) {
+            SearchResult ffmpegSearchResult = Finder.findFile(Path.of("C:/"), "ffmpeg.exe");
+            FFmpeg fFmpeg = new FFmpeg(ffmpegSearchResult.getFoundPath());
+            ffmpegPath = ffmpegSearchResult.getFoundPath();
+            String prettyPrint1 = String.format("%.2f секунд для ffmpeg", ffmpegSearchResult.getDurationSeconds());
+            System.out.println(prettyPrint1);
+        } else{
+            System.out.println(ffmpegPath);
+        }
+        if (ffprobePath == null) {
+            SearchResult ffprobeSearchResult = Finder.findFile(Path.of("C:/"), "ffprobe.exe");
+            FFprobe fFprobe = new FFprobe(ffprobeSearchResult.getFoundPath());
+            ffprobePath = ffprobeSearchResult.getFoundPath();
+            String prettyPrint2 = String.format("%.2f секунд для ffprobe", ffprobeSearchResult.getDurationSeconds());
+            System.out.println(prettyPrint2);
+        } else{
+            System.out.println(ffprobePath);
+        }
     }
     @FXML
     void onHideButton(ActionEvent event) {
@@ -152,23 +178,19 @@ public class Main extends Application {
         ImageView label3 = new ImageView(label3Image);
         label3.setFitWidth(30);
         label3.setFitHeight(30);
-//        label3.setTranslateY(6);
         roundButton3.setGraphic(label3);
 
         Image preview = new Image(String.valueOf(getClass().getResource("draganddrop.png")));
         imagePreview.setImage(preview);
 
         top_pane.setOnMousePressed(event -> {
-            // Запоминаем начальную позицию
             x = event.getSceneX();
             y = event.getSceneY();
         });
 
         top_pane.setOnMouseDragged(event -> {
-            // Получаем текущее окно (Stage) через Scene
             Stage stage = (Stage) top_pane.getScene().getWindow();
 
-            // Перемещаем окно на новые координаты
             stage.setX(event.getScreenX() - x);
             stage.setY(event.getScreenY() - y);
         });
@@ -216,7 +238,7 @@ public class Main extends Application {
         } catch (IOException e) {
             e.printStackTrace();
             System.out.println("Error loading FXML: " + e.getMessage());
-            return; // добавьте возврат, если загрузка не удалась
+            return;
         }
 
         Scene scene = new Scene(root);
