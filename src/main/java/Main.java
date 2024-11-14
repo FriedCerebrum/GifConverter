@@ -19,6 +19,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.bramp.ffmpeg.FFmpeg;
 import net.bramp.ffmpeg.FFprobe;
+import net.bramp.ffmpeg.builder.FFmpegBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,8 @@ public class Main extends Application {
     Stage primaryStage;
     String ffmpegPath;
     String ffprobePath;
+
+    File selectedFile;
     private double x = 0, y = 0;
     @FXML
     private Pane top_pane;
@@ -102,6 +105,19 @@ public class Main extends Application {
         } else{
             System.out.println(ffprobePath);
         }
+        if (selectedFile == null) {
+            System.out.println("Selected file is null");
+        } else{
+
+        }
+        FFmpegBuilder paletteBuilder = new FFmpegBuilder()
+                .setInput(inputVideoPath)
+                .addOutput("pallete.png")
+                .setFormat("png") // Формат палитры
+                .setVideoFilter(String.format("fps=%d,palettegen=max_colors=%d", slider1.getValue(), 10))
+                .disableAudio() // Отключение аудио (GIF не поддерживает аудио)
+                .setOverwriteOutput(true) // Перезапись существующего файла палитры
+                .done();
     }
     @FXML
     void onHideButton(ActionEvent event) {
@@ -128,7 +144,7 @@ public class Main extends Application {
         FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Изображения (*.png, *.jpg, *.gif)", "*.png", "*.jpg", "*.jpeg", "*.gif");
         fileChooser.getExtensionFilters().add(imageFilter);
 
-        File selectedFile = fileChooser.showOpenDialog(bot_left_button.getScene().getWindow());
+        selectedFile = fileChooser.showOpenDialog(bot_left_button.getScene().getWindow());
 
         if (selectedFile != null) {
             System.out.println("Выбран файл: " + selectedFile.getAbsolutePath());
