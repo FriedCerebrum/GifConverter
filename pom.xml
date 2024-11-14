@@ -5,7 +5,7 @@
 
     <groupId>com.memory</groupId>
     <artifactId>GifConverter</artifactId>
-    <version>0.2</version>
+    <version>0.3</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

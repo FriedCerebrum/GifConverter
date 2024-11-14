@@ -18,20 +18,23 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.bramp.ffmpeg.FFmpeg;
+import net.bramp.ffmpeg.FFmpegExecutor;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.builder.FFmpegBuilder;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main extends Application {
     Stage primaryStage;
-    String ffmpegPath;
-    String ffprobePath;
+
+    FFmpeg ffmpeg;
+    FFprobe ffprobe;
 
     File selectedFile;
     private double x = 0, y = 0;
@@ -80,45 +83,16 @@ public class Main extends Application {
     private Button renderButton;
     @FXML
     void onRenderButton(ActionEvent event) throws IOException {
-        System.out.println("FPS: " + slider1.getValue());
-        System.out.println("Bitrate: " + slider2.getValue());
-        System.out.println("Quality: " + slider3.getValue());
+        ffmpeg = new FFmpeg(Finder.findFile(Path.of("C:/"), "ffmpeg.exe").getFoundPath());
+        System.out.println(ffmpeg.isFFmpeg());
 
-        AtomicInteger atomicInteger = new AtomicInteger();
-        AtomicInteger atomicInteger1 = new AtomicInteger();
-
-        if (ffmpegPath == null) {
-            SearchResult ffmpegSearchResult = Finder.findFile(Path.of("C:/"), "ffmpeg.exe");
-            FFmpeg fFmpeg = new FFmpeg(ffmpegSearchResult.getFoundPath());
-            ffmpegPath = ffmpegSearchResult.getFoundPath();
-            String prettyPrint1 = String.format("%.2f секунд для ffmpeg", ffmpegSearchResult.getDurationSeconds());
-            System.out.println(prettyPrint1);
-        } else{
-            System.out.println(ffmpegPath);
-        }
-        if (ffprobePath == null) {
-            SearchResult ffprobeSearchResult = Finder.findFile(Path.of("C:/"), "ffprobe.exe");
-            FFprobe fFprobe = new FFprobe(ffprobeSearchResult.getFoundPath());
-            ffprobePath = ffprobeSearchResult.getFoundPath();
-            String prettyPrint2 = String.format("%.2f секунд для ffprobe", ffprobeSearchResult.getDurationSeconds());
-            System.out.println(prettyPrint2);
-        } else{
-            System.out.println(ffprobePath);
-        }
-        if (selectedFile == null) {
-            System.out.println("Selected file is null");
-        } else{
-
-        }
-        FFmpegBuilder paletteBuilder = new FFmpegBuilder()
-                .setInput(inputVideoPath)
-                .addOutput("pallete.png")
-                .setFormat("png") // Формат палитры
-                .setVideoFilter(String.format("fps=%d,palettegen=max_colors=%d", slider1.getValue(), 10))
-                .disableAudio() // Отключение аудио (GIF не поддерживает аудио)
-                .setOverwriteOutput(true) // Перезапись существующего файла палитры
-                .done();
+        ffprobe = new FFprobe(Finder.findFile(Path.of("C:/"), "ffprobe.exe").getFoundPath());
+        int fps = (int) slider1.getValue();
+        int quality = (int) slider3.getValue();
+        File gif = new File(selectedFile.getAbsolutePath() + ".gif");
+        GifMaker.makeGifOutVideo(ffmpeg, ffprobe, selectedFile, gif, fps, quality);
     }
+
     @FXML
     void onHideButton(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
@@ -141,7 +115,7 @@ public class Main extends Application {
     @FXML
     void brb(ActionEvent event) throws IOException {
         FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Изображения (*.png, *.jpg, *.gif)", "*.png", "*.jpg", "*.jpeg", "*.gif");
+        FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Видео", "*.mp4");
         fileChooser.getExtensionFilters().add(imageFilter);
 
         selectedFile = fileChooser.showOpenDialog(bot_left_button.getScene().getWindow());
@@ -149,15 +123,15 @@ public class Main extends Application {
         if (selectedFile != null) {
             System.out.println("Выбран файл: " + selectedFile.getAbsolutePath());
 
-            Image image = ImageResizer.resizeImageInMemory(selectedFile.getAbsolutePath(), 150, 150);
-
-            image_tr.setImage(image);
-
-            Rectangle clip = new Rectangle(0, 0, 150, 150);
-            clip.setArcWidth(30);
-            clip.setArcHeight(30);
-
-            image_tr.setClip(clip);
+//            Image image = ImageResizer.resizeImageInMemory(selectedFile.getAbsolutePath(), 150, 150);
+//
+//            image_tr.setImage(image);
+//
+//            Rectangle clip = new Rectangle(0, 0, 150, 150);
+//            clip.setArcWidth(30);
+//            clip.setArcHeight(30);
+//
+//            image_tr.setClip(clip);
         }
     }
 
