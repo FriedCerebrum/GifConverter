@@ -22,6 +22,7 @@ import net.bramp.ffmpeg.FFprobe;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,8 +33,8 @@ public class Main extends Application {
 
     Stage primaryStage;
 
-    FFmpeg ffmpeg;
-    FFprobe ffprobe;
+    String ffmpeg;
+    String ffprobe;
 
     File selectedFile;
     private double x = 0, y = 0;
@@ -83,14 +84,19 @@ public class Main extends Application {
 
     @FXML
     void onRenderButton(ActionEvent event) throws IOException { // кнопка рендера
-        ffmpeg = new FFmpeg(Finder.findFile(Path.of("C:/"), "ffmpeg.exe").getFoundPath());
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "FFmpeg is available: {0}", ffmpeg.isFFmpeg());
+        ffmpeg = Finder.findFile(Path.of("C:/"), "ffmpeg.exe").getFoundPath();
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "FFmpeg is :" + ffmpeg);
 
-        ffprobe = new FFprobe(Finder.findFile(Path.of("C:/"), "ffprobe.exe").getFoundPath());
+        ffprobe = Finder.findFile(Path.of("C:/"), "ffprobe.exe").getFoundPath();
+
         int fps = (int) slider1.getValue();
         int quality = (int) slider3.getValue();
-        File gif = new File(selectedFile.getAbsolutePath() + ".gif");
-        GifMaker.makeGifOutVideo(ffmpeg, ffprobe, selectedFile, gif, fps, quality);
+
+        String newPath = selectedFile.getAbsolutePath().substring(0, selectedFile.getAbsolutePath().lastIndexOf('.')) + ".gif";
+
+        // Создаем новый файл
+        File gif = new File(newPath);
+        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, fps, quality);
     }
 
     @FXML
