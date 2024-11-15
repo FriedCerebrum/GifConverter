@@ -4,8 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Slider;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -18,19 +17,19 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.bramp.ffmpeg.FFmpeg;
-import net.bramp.ffmpeg.FFmpegExecutor;
 import net.bramp.ffmpeg.FFprobe;
-import net.bramp.ffmpeg.builder.FFmpegBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main extends Application {
+    private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
+    public static final boolean LOG_ENABLED = true;
+
     Stage primaryStage;
 
     FFmpeg ffmpeg;
@@ -81,10 +80,11 @@ public class Main extends Application {
     private Button roundButton3;
     @FXML
     private Button renderButton;
+
     @FXML
-    void onRenderButton(ActionEvent event) throws IOException {
+    void onRenderButton(ActionEvent event) throws IOException { // кнопка рендера
         ffmpeg = new FFmpeg(Finder.findFile(Path.of("C:/"), "ffmpeg.exe").getFoundPath());
-        System.out.println(ffmpeg.isFFmpeg());
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "FFmpeg is available: {0}", ffmpeg.isFFmpeg());
 
         ffprobe = new FFprobe(Finder.findFile(Path.of("C:/"), "ffprobe.exe").getFoundPath());
         int fps = (int) slider1.getValue();
@@ -98,18 +98,19 @@ public class Main extends Application {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setIconified(true);
 
-        System.out.println("Window is hidden");
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Window is hidden");
     }
 
     @FXML
     void onCloseAction(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Application closed");
     }
 
     @FXML
     void blb(ActionEvent event) {
-
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Bottom left button clicked");
     }
 
     @FXML
@@ -121,35 +122,28 @@ public class Main extends Application {
         selectedFile = fileChooser.showOpenDialog(bot_left_button.getScene().getWindow());
 
         if (selectedFile != null) {
-            System.out.println("Выбран файл: " + selectedFile.getAbsolutePath());
-
-//            Image image = ImageResizer.resizeImageInMemory(selectedFile.getAbsolutePath(), 150, 150);
-//
-//            image_tr.setImage(image);
-//
-//            Rectangle clip = new Rectangle(0, 0, 150, 150);
-//            clip.setArcWidth(30);
-//            clip.setArcHeight(30);
-//
-//            image_tr.setClip(clip);
+            if (LOG_ENABLED) LOGGER.log(Level.INFO, "Selected file: {0}", selectedFile.getAbsolutePath());
         }
     }
 
     @FXML
     void tlb(ActionEvent event) {
-
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Top left button clicked");
     }
 
     @FXML
     void trb(ActionEvent event) {
-
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Top right button clicked");
     }
+
     @FXML
     void slider1OnClicked(MouseEvent event) {
-        System.out.println(slider1.getValue());
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Slider1 value: {0}", slider1.getValue());
     }
+
     @FXML
     private ImageView imagePreview;
+
     public void initialize() {
         Image label1Image = new Image(String.valueOf(getClass().getResource("fps.png")));
         ImageView label1 = new ImageView(label1Image);
@@ -180,7 +174,6 @@ public class Main extends Application {
 
         top_pane.setOnMouseDragged(event -> {
             Stage stage = (Stage) top_pane.getScene().getWindow();
-
             stage.setX(event.getScreenX() - x);
             stage.setY(event.getScreenY() - y);
         });
@@ -226,8 +219,7 @@ public class Main extends Application {
         try {
             root = fxmlLoader.load();
         } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Error loading FXML: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, "Error loading FXML: {0}", e.getMessage());
             return;
         }
 
@@ -239,5 +231,7 @@ public class Main extends Application {
         stage.setTitle("Gif Converter");
         stage.show();
         primaryStage = stage;
+
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Application started");
     }
 }

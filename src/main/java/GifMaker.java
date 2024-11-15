@@ -3,6 +3,7 @@ import net.bramp.ffmpeg.FFmpegExecutor;
 import net.bramp.ffmpeg.job.FFmpegJob;
 import net.bramp.ffmpeg.FFprobe;
 import net.bramp.ffmpeg.builder.FFmpegBuilder;
+import net.bramp.ffmpeg.probe.FFmpegProbeResult;
 import net.bramp.ffmpeg.progress.Progress;
 import net.bramp.ffmpeg.progress.ProgressListener;
 import net.bramp.ffmpeg.FFmpegUtils;
@@ -10,6 +11,8 @@ import net.bramp.ffmpeg.FFmpegUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GifMaker {
 
@@ -25,21 +28,24 @@ public class GifMaker {
      * @throws IOException если возникают ошибки при чтении видео или записи GIF
      */
     public static void makeGifOutVideo(FFmpeg ffmpeg, FFprobe ffprobe, File video, File gif, int quality, int fps) throws IOException {
-        System.out.println("Начало конвертации видео в GIF...");
+        Logger logger = Logger.getLogger("GifMaker");
+        if (Main.LOG_ENABLED) logger.log(Level.INFO, "Начало конвертации видео в GIF...");
 
-        // Пробуем получить продолжительность видео с помощью ffprobe
-        net.bramp.ffmpeg.probe.FFmpegProbeResult probeResult = ffprobe.probe(video.getAbsolutePath());
+        // Получаем информацию о видео с помощью ffprobe
+        FFmpegProbeResult probeResult = ffprobe.probe(video.getAbsolutePath());
         final double durationNs = probeResult.getFormat().duration * TimeUnit.SECONDS.toNanos(1);
+
+        // Если выходной файл имеет расширение .mp4, заменяем его на .gif
+        String gifPath = gif.getAbsolutePath().replaceFirst("\\.mp4$", ".gif");
 
         // Создаем команду для ffmpeg
         FFmpegBuilder builder = new FFmpegBuilder()
-                .setInput(probeResult)
-                .addOutput(gif.getAbsolutePath())
-                .addExtraArgs(
-                        "-vf", "fps=" + fps + ",scale=240:-1:flags=lanczos", // Уменьшаем разрешение до 240 пикселей
-                        "-q:v", String.valueOf(quality)                        // Качество GIF
-                )
-                .setFormat("gif")
+                .addInput(video.getAbsolutePath()) // Входное видео
+                .overrideOutputFiles(true) // Перезаписываем выходной файл
+                .addOutput(gifPath) // Выходной файл GIF
+                .setFormat("gif") // Устанавливаем формат
+                .addExtraArgs("-vf", String.format("fps=%d,scale=240:-1:flags=lanczos", fps)) // Устанавливаем FPS и масштаб
+                .addExtraArgs("-q:v", String.valueOf(quality)) // Устанавливаем качество
                 .done();
 
         // Выполняем команду с отслеживанием прогресса
@@ -50,12 +56,10 @@ public class GifMaker {
                 double percentage = (double) progress.out_time_ns / durationNs * 100;
 
                 // Логируем информацию о прогрессе
-                System.out.println(String.format(
-                        "[%.0f%%] Статус: %s, Кадр: %d, Время: %s, FPS: %.0f, Скорость: %.2fx",
+                if (Main.LOG_ENABLED) logger.log(Level.INFO, String.format(
+                        "[%.0f%%] Кадр: %d, FPS: %.0f, Скорость: %.2fx",
                         percentage,
-                        progress.status,
                         progress.frame,
-                        FFmpegUtils.toTimecode(progress.out_time_ns, TimeUnit.NANOSECONDS),
                         progress.fps.doubleValue(),
                         progress.speed
                 ));
@@ -64,6 +68,6 @@ public class GifMaker {
 
         // Запускаем выполнение
         job.run();
-        System.out.println("Конвертация завершена! GIF создан: " + gif.getAbsolutePath());
+        if (Main.LOG_ENABLED) logger.log(Level.INFO, "Конвертация завершена! GIF создан: " + gifPath);
     }
 }
