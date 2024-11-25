@@ -87,36 +87,33 @@ public class Main extends Application {
         ffmpeg = Finder.findFile(Path.of("C:/"), "ffmpeg.exe").getFoundPath();
         if (LOG_ENABLED) LOGGER.log(Level.INFO, "FFmpeg is :" + ffmpeg);
 
-        ffprobe = Finder.findFile(Path.of("C:/"), "ffprobe.exe").getFoundPath();
 
         int fps = (int) slider1.getValue();
         int quality = (int) slider3.getValue();
 
         String newPath = selectedFile.getAbsolutePath().substring(0, selectedFile.getAbsolutePath().lastIndexOf('.')) + ".gif";
+        LOGGER.log(Level.INFO, "newPath: " + newPath);
 
         // Создаем новый файл
         File gif = new File(newPath);
-        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, fps, quality);
+        LOGGER.log(Level.INFO, "gif: " + gif.getAbsolutePath());
+        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, quality, fps);
     }
 
     @FXML
     void onHideButton(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setIconified(true);
-
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Window is hidden");
     }
 
     @FXML
     void onCloseAction(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Application closed");
     }
 
     @FXML
     void blb(ActionEvent event) {
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Bottom left button clicked");
     }
 
     @FXML
@@ -134,17 +131,14 @@ public class Main extends Application {
 
     @FXML
     void tlb(ActionEvent event) {
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Top left button clicked");
     }
 
     @FXML
     void trb(ActionEvent event) {
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Top right button clicked");
     }
 
     @FXML
     void slider1OnClicked(MouseEvent event) {
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Slider1 value: {0}", slider1.getValue());
     }
 
     @FXML
@@ -164,10 +158,10 @@ public class Main extends Application {
         label2.setFitHeight(35);
         roundButton2.setGraphic(label2);
 
-        Image label3Image = new Image(String.valueOf(getClass().getResource("quality.png")));
+        Image label3Image = new Image(String.valueOf(getClass().getResource("quality.png"))); // quality.png в resources
         ImageView label3 = new ImageView(label3Image);
-        label3.setFitWidth(30);
-        label3.setFitHeight(30);
+        label3.setFitWidth(30); // смещение картинки
+        label3.setFitHeight(30); // смещение картинки
         roundButton3.setGraphic(label3);
 
         Image preview = new Image(String.valueOf(getClass().getResource("draganddrop.png")));
@@ -237,7 +231,5 @@ public class Main extends Application {
         stage.setTitle("Gif Converter");
         stage.show();
         primaryStage = stage;
-
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Application started");
     }
 }
