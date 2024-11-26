@@ -22,7 +22,7 @@ public class GifMaker {
                 ffmpeg,
                 "-i", video.getAbsolutePath(),
 //                "-t", "4", // Указываем длительность в секундах
-                "-filter_complex", String.format("fps=%d,scale=360:-2", fps),
+                "-filter_complex", String.format("fps=%d,scale=160:-2", fps),
                 "-c:v", "gif",
                 "-q:v", String.valueOf(quality),
                 "-pix_fmt", "rgb8",
@@ -82,7 +82,7 @@ public class GifMaker {
         if (line.startsWith("out_time_ms=")) {
             String timeMsStr = line.substring("out_time_ms=".length()).trim();
             long timeMs = Long.parseLong(timeMsStr);
-            double timeSec = timeMs / 1_000_000.0;
+            double timeSec = timeMs / 1_000_000.0; // Здесь делим на 10 миллионов для получения секунд
             double percentage = calculatePercentage(timeSec, totalDuration);
             System.out.printf("Прогресс: %.2f сек (%.2f%%)%n", timeSec, percentage);
         } else if (line.startsWith("progress=")) {

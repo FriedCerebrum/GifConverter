@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -68,7 +69,9 @@ public class FFmpegExample {
      * @throws InterruptedException Если процесс был прерван
      */
     private static void executeCommand(String[] command) throws IOException, InterruptedException {
+        System.out.println(Arrays.toString(command));
         ProcessBuilder processBuilder = new ProcessBuilder(command);
+
         processBuilder.redirectErrorStream(true); // Объединяем вывод ошибок и обычный вывод
         Process process = processBuilder.start();
 
