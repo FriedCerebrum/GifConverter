@@ -1,4 +1,6 @@
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,8 +36,10 @@ public class Main extends Application {
 
     Stage primaryStage;
 
-    String ffmpeg;
-    String ffprobe;
+    private volatile String ffmpeg;
+    private volatile String ffprobe;
+
+    private ExecutorService executor;
 
     File selectedFile;
     private double x = 0, y = 0;
@@ -84,10 +89,11 @@ public class Main extends Application {
 
     @FXML
     void onRenderButton(ActionEvent event) throws IOException { // кнопка рендера
-        ffmpeg = Finder.findFile(Path.of("C:/"), "ffmpeg.exe").getFoundPath();
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "FFmpeg is :" + ffmpeg);
-
-        ffprobe = Finder.findFile(Path.of("C:/"), "ffprobe.exe").getFoundPath();
+        if (ffmpeg == null || ffprobe == null) {
+            showAlert(Alert.AlertType.ERROR, "Ошибка", "FFmpeg или FFprobe не найдены.");
+            if (LOG_ENABLED) LOGGER.log(Level.WARNING, "FFmpeg или FFprobe не найдены.");
+            return;
+        }
 
         int fps = (int) slider1.getValue();
         int quality = (int) slider3.getValue();
@@ -97,6 +103,8 @@ public class Main extends Application {
         // Создаем новый файл
         File gif = new File(newPath);
         GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, fps, quality);
+
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "GIF создан: " + gif.getAbsolutePath());
     }
 
     @FXML
@@ -212,6 +220,8 @@ public class Main extends Application {
         image_tr.setSmooth(true);
         image_tr.setFitWidth(150);
         image_tr.setFitHeight(150);
+
+        executor = Executors.newFixedThreadPool(2);
     }
 
     public static void main(String[] args) {
@@ -239,5 +249,91 @@ public class Main extends Application {
         primaryStage = stage;
 
         if (LOG_ENABLED) LOGGER.log(Level.INFO, "Application started");
+        startSearchTasks();
+    }
+    private void startSearchTasks() {
+        // Создание задач для поиска ffmpeg и ffprobe
+        Task<String> findFfmpegTask = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                SearchResult result = Finder.findFile(Paths.get("C:/"), "ffmpeg.exe");
+                if (result.getFoundPath() != null) {
+                    return result.getFoundPath();
+                } else {
+                    return null;
+                }
+            }
+        };
+
+        Task<String> findFfprobeTask = new Task<>() {
+            @Override
+            protected String call() throws Exception {
+                SearchResult result = Finder.findFile(Paths.get("C:/"), "ffprobe.exe");
+                if (result.getFoundPath() != null) {
+                    return result.getFoundPath();
+                } else {
+                    return null;
+                }
+            }
+        };
+
+        // Обработка успешного завершения задачи поиска ffmpeg
+        findFfmpegTask.setOnSucceeded(event -> {
+            ffmpeg = findFfmpegTask.getValue();
+            if (ffmpeg != null) {
+                LOGGER.log(Level.INFO, "FFmpeg найден по пути: {0}", ffmpeg);
+                // Можно обновить UI, например, показать статус
+            } else {
+                LOGGER.log(Level.WARNING, "FFmpeg не найден.");
+                Platform.runLater(() -> showAlert(Alert.AlertType.WARNING, "Предупреждение", "FFmpeg не найден."));
+            }
+        });
+
+        // Обработка успешного завершения задачи поиска ffprobe
+        findFfprobeTask.setOnSucceeded(event -> {
+            ffprobe = findFfprobeTask.getValue();
+            if (ffprobe != null) {
+                LOGGER.log(Level.INFO, "FFprobe найден по пути: {0}", ffprobe);
+                // Можно обновить UI, например, показать статус
+            } else {
+                LOGGER.log(Level.WARNING, "FFprobe не найден.");
+                Platform.runLater(() -> showAlert(Alert.AlertType.WARNING, "Предупреждение", "FFprobe не найден."));
+            }
+        });
+
+        // Обработка ошибок при поиске ffmpeg
+        findFfmpegTask.setOnFailed(event -> {
+            Throwable e = findFfmpegTask.getException();
+            LOGGER.log(Level.SEVERE, "Ошибка при поиске FFmpeg: {0}", e.getMessage());
+            Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Ошибка", "Ошибка при поиске FFmpeg."));
+        });
+
+        // Обработка ошибок при поиске ffprobe
+        findFfprobeTask.setOnFailed(event -> {
+            Throwable e = findFfprobeTask.getException();
+            LOGGER.log(Level.SEVERE, "Ошибка при поиске FFprobe: {0}", e.getMessage());
+            Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Ошибка", "Ошибка при поиске FFprobe."));
+        });
+
+        // Запуск задач в ExecutorService
+        executor.submit(findFfmpegTask);
+        executor.submit(findFfprobeTask);
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.initOwner(primaryStage);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        if (executor != null && !executor.isShutdown()) {
+            executor.shutdownNow();
+        }
     }
 }
