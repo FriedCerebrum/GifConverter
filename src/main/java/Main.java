@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -102,7 +103,7 @@ public class Main extends Application {
 
         // Создаем новый файл
         File gif = new File(newPath);
-        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, fps, quality);
+        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, quality, fps);
 
         if (LOG_ENABLED) LOGGER.log(Level.INFO, "GIF создан: " + gif.getAbsolutePath());
     }
@@ -222,6 +223,7 @@ public class Main extends Application {
         image_tr.setFitHeight(150);
 
         executor = Executors.newFixedThreadPool(2);
+        startSearchTasks();
     }
 
     public static void main(String[] args) {
@@ -249,7 +251,6 @@ public class Main extends Application {
         primaryStage = stage;
 
         if (LOG_ENABLED) LOGGER.log(Level.INFO, "Application started");
-        startSearchTasks();
     }
     private void startSearchTasks() {
         // Создание задач для поиска ffmpeg и ffprobe

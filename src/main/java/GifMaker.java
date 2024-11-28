@@ -21,7 +21,7 @@ public class GifMaker {
         String[] commands = {
                 ffmpeg,
                 "-i", video.getAbsolutePath(),
-//                "-t", "4", // Указываем длительность в секундах
+                "-y",
                 "-filter_complex", String.format("fps=%d,scale=160:-2", fps),
                 "-c:v", "gif",
                 "-q:v", String.valueOf(quality),
