@@ -359,6 +359,7 @@ public class Main extends Application {
         }
         if (isLastGifUploaded){
             showAlert(Alert.AlertType.INFORMATION, "GIF already uploaded!", "You have already uploaded this gif to the server.");
+            return;
         }
 
         String gifPath = selectedFile.getAbsolutePath().substring(0, selectedFile.getAbsolutePath().lastIndexOf('.')) + ".gif";
