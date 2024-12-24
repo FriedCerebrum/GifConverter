@@ -18,13 +18,10 @@ import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import net.bramp.ffmpeg.FFmpeg;
-import net.bramp.ffmpeg.FFprobe;
 import service.GopiApiService;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +32,8 @@ import java.util.logging.Logger;
 public class Main extends Application {
     private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
     public static final boolean LOG_ENABLED = true;
+    public static File lastGif;
+    public static boolean isLastGifUploaded;
 
     Stage primaryStage;
 
@@ -108,10 +107,13 @@ public class Main extends Application {
         String newPath = selectedFile.getAbsolutePath().substring(0, selectedFile.getAbsolutePath().lastIndexOf('.')) + ".gif";
 
         // Создаем новый файл
-        File gif = new File(newPath);
-        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, quality, fps);
+        lastGif = new File(newPath);
+        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, lastGif, quality, fps);
+        if (lastGif.exists() && !isLastGifUploaded){
+            uploadButton.setDisable(false);
+        }
 
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "GIF создан: " + gif.getAbsolutePath());
+        if (LOG_ENABLED) LOGGER.log(Level.INFO, "GIF создан: " + lastGif.getAbsolutePath());
     }
 
     @FXML
@@ -126,7 +128,13 @@ public class Main extends Application {
     void onCloseAction(ActionEvent event) {
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
-        if (LOG_ENABLED) LOGGER.log(Level.INFO, "Application closed");
+
+        if (LOG_ENABLED) {
+            LOGGER.log(Level.INFO, "Application closed");
+        }
+
+        Platform.exit();
+        System.exit(0);
     }
 
     @FXML
@@ -189,14 +197,10 @@ public class Main extends Application {
         Image preview = new Image(String.valueOf(getClass().getResource("draganddrop.png")));
         imagePreview.setImage(preview);
 
-     /*   Image gifbutton = new Image(Objects.requireNonNull(getClass().getResourceAsStream("upload.png")));
-        ImageView gifButton = new ImageView(gifbutton);
-        gifButton.setPreserveRatio(false);
-        gifButton.setFitWidth(40);
-        gifButton.setFitHeight(40);
-        gifButton.setSmooth(true);
-        bot_right_button.setGraphic(gifButton);*/
-
+        for (Button button : new Button[]{top_right_button, top_left_button, bot_right_button, bot_left_button}){
+            button.setOnMousePressed(event -> button.setTranslateY(3));
+            button.setOnMouseReleased(event -> button.setTranslateY(0)); // очевидное
+        }
 
         top_pane.setOnMousePressed(event -> {
             x = event.getSceneX();
@@ -349,19 +353,13 @@ public class Main extends Application {
 
     @FXML
     private void handleUploadToServer() {
-        if (selectedFile == null || !selectedFile.exists()) {
-            showAlert(Alert.AlertType.WARNING, "No File Selected", "Please select a file first!");
+        if (lastGif == null || !lastGif.exists()) {
+            showAlert(Alert.AlertType.WARNING, "No File Selected", "Please render a GIF first!");
             return;
         }
 
-        // Получаем путь к GIF файлу
         String gifPath = selectedFile.getAbsolutePath().substring(0, selectedFile.getAbsolutePath().lastIndexOf('.')) + ".gif";
         File gifFile = new File(gifPath);
-
-        if (!gifFile.exists()) {
-            showAlert(Alert.AlertType.WARNING, "GIF Not Found", "Please render the GIF first!");
-            return;
-        }
 
         Task<Void> uploadTask = new Task<>() {
             @Override
@@ -370,6 +368,7 @@ public class Main extends Application {
                 apiService.uploadGif(gifFile)
                         .thenAccept(response -> {
                             Platform.runLater(() -> {
+                                isLastGifUploaded = true;
                                 showAlert(Alert.AlertType.INFORMATION, "Upload Success",
                                     "GIF successfully uploaded to server!\nResponse: " + response);
                             });

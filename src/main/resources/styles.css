@@ -40,7 +40,7 @@
 }
 
 .four-buttons:hover {
-    -fx-background-color: #4D4F66;
+    -fx-background-color: #72748C;
 }
 .four-buttons:pressed{
 
@@ -87,5 +87,16 @@
     -fx-border-radius: 10px;
     -fx-background-radius: 10px;
     -fx-border-color:  #41434D;
+}
+.render-button:hover {
+    -fx-background-color: #72748C;
+    -fx-text-fill: #ffffff; /* Изменение текста на белый при наведении */
+}
+
+.render-button:pressed {
+    -fx-background-color: #3B3C47; /* Темнее при нажатии */
+    -fx-pressed-color: #565872;
+    -fx-text-fill: #f4e8da;        /* Текст возвращается к исходному цвету */
+    -fx-translate-y: 2px;          /* Кнопка визуально "уходит" вниз */
 }
 
