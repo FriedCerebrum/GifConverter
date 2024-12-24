@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import net.bramp.ffmpeg.FFmpeg;
 import net.bramp.ffmpeg.FFprobe;
+import service.GopiApiService;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -88,6 +90,11 @@ public class Main extends Application {
     private Button renderButton;
 
     @FXML
+    private Button uploadButton;
+
+    private GopiApiService apiService;
+
+    @FXML
     void onRenderButton(ActionEvent event) throws IOException { // кнопка рендера
         if (ffmpeg == null || ffprobe == null) {
             showAlert(Alert.AlertType.ERROR, "Ошибка", "FFmpeg или FFprobe не найдены.");
@@ -102,7 +109,7 @@ public class Main extends Application {
 
         // Создаем новый файл
         File gif = new File(newPath);
-        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, fps, quality);
+        GifMaker.makeGifOutVideo(ffmpeg, selectedFile, gif, quality, fps);
 
         if (LOG_ENABLED) LOGGER.log(Level.INFO, "GIF создан: " + gif.getAbsolutePath());
     }
@@ -159,6 +166,7 @@ public class Main extends Application {
     private ImageView imagePreview;
 
     public void initialize() {
+        apiService = new GopiApiService();
         Image label1Image = new Image(String.valueOf(getClass().getResource("fps.png")));
         ImageView label1 = new ImageView(label1Image);
         label1.setFitWidth(35);
@@ -180,6 +188,15 @@ public class Main extends Application {
 
         Image preview = new Image(String.valueOf(getClass().getResource("draganddrop.png")));
         imagePreview.setImage(preview);
+
+     /*   Image gifbutton = new Image(Objects.requireNonNull(getClass().getResourceAsStream("upload.png")));
+        ImageView gifButton = new ImageView(gifbutton);
+        gifButton.setPreserveRatio(false);
+        gifButton.setFitWidth(40);
+        gifButton.setFitHeight(40);
+        gifButton.setSmooth(true);
+        bot_right_button.setGraphic(gifButton);*/
+
 
         top_pane.setOnMousePressed(event -> {
             x = event.getSceneX();
@@ -222,6 +239,7 @@ public class Main extends Application {
         image_tr.setFitHeight(150);
 
         executor = Executors.newFixedThreadPool(2);
+        startSearchTasks();
     }
 
     public static void main(String[] args) {
@@ -249,8 +267,8 @@ public class Main extends Application {
         primaryStage = stage;
 
         if (LOG_ENABLED) LOGGER.log(Level.INFO, "Application started");
-        startSearchTasks();
     }
+
     private void startSearchTasks() {
         // Создание задач для поиска ffmpeg и ffprobe
         Task<String> findFfmpegTask = new Task<>() {
@@ -327,6 +345,47 @@ public class Main extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void handleUploadToServer() {
+        if (selectedFile != null && selectedFile.exists()) {
+            Task<Void> uploadTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    updateMessage("Uploading GIF to server...");
+                    apiService.uploadGif(selectedFile)
+                            .thenAccept(response -> {
+                                Platform.runLater(() -> {
+                                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                                    alert.setTitle("Upload Success");
+                                    alert.setHeaderText(null);
+                                    alert.setContentText("GIF successfully uploaded to server!\nResponse: " + response);
+                                    alert.showAndWait();
+                                });
+                            })
+                            .exceptionally(throwable -> {
+                                Platform.runLater(() -> {
+                                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                                    alert.setTitle("Upload Error");
+                                    alert.setHeaderText(null);
+                                    alert.setContentText("Failed to upload GIF: " + throwable.getMessage());
+                                    alert.showAndWait();
+                                });
+                                return null;
+                            });
+                    return null;
+                }
+            };
+
+            executor.submit(uploadTask);
+        } else {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("No File Selected");
+            alert.setHeaderText(null);
+            alert.setContentText("Please select a GIF file first!");
+            alert.showAndWait();
+        }
     }
 
     @Override
