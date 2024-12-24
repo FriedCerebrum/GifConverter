@@ -353,9 +353,12 @@ public class Main extends Application {
 
     @FXML
     private void handleUploadToServer() {
-        if (lastGif == null || !lastGif.exists()) {
+        if (lastGif == null || !lastGif.exists() ) {
             showAlert(Alert.AlertType.WARNING, "No File Selected", "Please render a GIF first!");
             return;
+        }
+        if (isLastGifUploaded){
+            showAlert(Alert.AlertType.INFORMATION, "GIF already uploaded!", "You have already uploaded this gif to the server.");
         }
 
         String gifPath = selectedFile.getAbsolutePath().substring(0, selectedFile.getAbsolutePath().lastIndexOf('.')) + ".gif";
