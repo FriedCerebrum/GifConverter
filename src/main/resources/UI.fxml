@@ -52,7 +52,7 @@
             </Button>
          </children>
       </Pane>
-      <Button layoutX="436.0" layoutY="210.0" maxHeight="35.0" maxWidth="150.0" minHeight="35.0" minWidth="150.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="150.0" styleClass="four-buttons" stylesheets="@styles.css" text="Advanced Settings" textAlignment="CENTER">
+      <Button fx:id="advancedSettingsButton" layoutX="436.0" layoutY="210.0" maxHeight="35.0" maxWidth="150.0" minHeight="35.0" minWidth="150.0" mnemonicParsing="false" onAction="#onAdvancedSettings" prefHeight="35.0" prefWidth="150.0" styleClass="four-buttons" stylesheets="@styles.css" text="Advanced Settings" textAlignment="CENTER">
          <font>
             <Font name="Arial Bold" size="14.0" />
          </font>

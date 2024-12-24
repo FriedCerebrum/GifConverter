@@ -5,6 +5,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -16,6 +17,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import service.GopiApiService;
@@ -50,6 +52,8 @@ public class Main extends Application {
     private Button close_btn;
     @FXML
     private Rectangle rect;
+    @FXML
+    private Button advancedSettingsButton;
 
     @FXML
     private Button bot_left_button;
@@ -92,6 +96,38 @@ public class Main extends Application {
     private Button uploadButton;
 
     private GopiApiService apiService;
+    @FXML
+    private void handleAccept() {
+        System.out.println("Accept clicked!");
+    }
+
+    @FXML
+    private void handleCancel() {
+        System.out.println("Cancel clicked!");
+    }
+    @FXML
+    public void onAdvancedSettings(ActionEvent event) {
+        try {
+            // Загружаем FXML для нового окна
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/Advanced.fxml"));
+            Parent root = loader.load();
+
+            // Создаем новое окно
+            Stage stage = new Stage();
+            stage.initModality(Modality.APPLICATION_MODAL); // Модальное окно
+            stage.initStyle(StageStyle.TRANSPARENT); // Убираем рамку и делаем фон прозрачным
+
+            // Создаем сцену с прозрачным фоном
+            Scene scene = new Scene(root);
+            scene.setFill(javafx.scene.paint.Color.TRANSPARENT); // Устанавливаем прозрачный цвет фона
+
+            // Устанавливаем сцену и показываем окно
+            stage.setScene(scene);
+            stage.showAndWait(); // Ждем закрытия окна
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @FXML
     void onRenderButton(ActionEvent event) throws IOException { // кнопка рендера
@@ -246,6 +282,11 @@ public class Main extends Application {
         startSearchTasks();
     }
 
+    private void openAdvancedSettings(ActionEvent event) {
+        AdvancedSettingsWindow advancedSettingsWindow = new AdvancedSettingsWindow();
+        advancedSettingsWindow.display();
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -398,4 +439,5 @@ public class Main extends Application {
             executor.shutdownNow();
         }
     }
+
 }
