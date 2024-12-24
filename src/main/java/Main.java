@@ -349,43 +349,43 @@ public class Main extends Application {
 
     @FXML
     private void handleUploadToServer() {
-        if (selectedFile != null && selectedFile.exists()) {
-            Task<Void> uploadTask = new Task<>() {
-                @Override
-                protected Void call() throws Exception {
-                    updateMessage("Uploading GIF to server...");
-                    apiService.uploadGif(selectedFile)
-                            .thenAccept(response -> {
-                                Platform.runLater(() -> {
-                                    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                                    alert.setTitle("Upload Success");
-                                    alert.setHeaderText(null);
-                                    alert.setContentText("GIF successfully uploaded to server!\nResponse: " + response);
-                                    alert.showAndWait();
-                                });
-                            })
-                            .exceptionally(throwable -> {
-                                Platform.runLater(() -> {
-                                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                                    alert.setTitle("Upload Error");
-                                    alert.setHeaderText(null);
-                                    alert.setContentText("Failed to upload GIF: " + throwable.getMessage());
-                                    alert.showAndWait();
-                                });
-                                return null;
-                            });
-                    return null;
-                }
-            };
-
-            executor.submit(uploadTask);
-        } else {
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setTitle("No File Selected");
-            alert.setHeaderText(null);
-            alert.setContentText("Please select a GIF file first!");
-            alert.showAndWait();
+        if (selectedFile == null || !selectedFile.exists()) {
+            showAlert(Alert.AlertType.WARNING, "No File Selected", "Please select a file first!");
+            return;
         }
+
+        // Получаем путь к GIF файлу
+        String gifPath = selectedFile.getAbsolutePath().substring(0, selectedFile.getAbsolutePath().lastIndexOf('.')) + ".gif";
+        File gifFile = new File(gifPath);
+
+        if (!gifFile.exists()) {
+            showAlert(Alert.AlertType.WARNING, "GIF Not Found", "Please render the GIF first!");
+            return;
+        }
+
+        Task<Void> uploadTask = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                updateMessage("Uploading GIF to server...");
+                apiService.uploadGif(gifFile)
+                        .thenAccept(response -> {
+                            Platform.runLater(() -> {
+                                showAlert(Alert.AlertType.INFORMATION, "Upload Success",
+                                    "GIF successfully uploaded to server!\nResponse: " + response);
+                            });
+                        })
+                        .exceptionally(throwable -> {
+                            Platform.runLater(() -> {
+                                showAlert(Alert.AlertType.ERROR, "Upload Error",
+                                    "Failed to upload GIF: " + throwable.getMessage());
+                            });
+                            return null;
+                        });
+                return null;
+            }
+        };
+
+        executor.submit(uploadTask);
     }
 
     @Override
