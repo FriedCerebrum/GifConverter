@@ -20,6 +20,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import javafx.util.Duration;
 import service.GopiApiService;
 
 import java.io.File;
@@ -28,6 +29,7 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -95,16 +97,87 @@ public class Main extends Application {
     @FXML
     private Button uploadButton;
 
-    private GopiApiService apiService;
     @FXML
-    private void handleAccept() {
-        System.out.println("Accept clicked!");
-    }
+    private ImageView videoThumbnail;
+
+    private GopiApiService apiService;
 
     @FXML
-    private void handleCancel() {
-        System.out.println("Cancel clicked!");
+    private ImageView imagePreview;
+
+    public void initialize() {
+        apiService = new GopiApiService();
+        Image label1Image = new Image(String.valueOf(getClass().getResource("fps.png")));
+        ImageView label1 = new ImageView(label1Image);
+        label1.setFitWidth(35);
+        label1.setFitHeight(35);
+        label1.setTranslateY(-3);
+        roundButton1.setGraphic(label1);
+
+        Image label2Image = new Image(String.valueOf(getClass().getResource("bitrate.png")));
+        ImageView label2 = new ImageView(label2Image);
+        label2.setFitWidth(35);
+        label2.setFitHeight(35);
+        roundButton2.setGraphic(label2);
+
+        Image label3Image = new Image(String.valueOf(getClass().getResource("quality.png")));
+        ImageView label3 = new ImageView(label3Image);
+        label3.setFitWidth(30);
+        label3.setFitHeight(30);
+        roundButton3.setGraphic(label3);
+
+        Image preview = new Image(String.valueOf(getClass().getResource("draganddrop.png")));
+        imagePreview.setImage(preview);
+
+        for (Button button : new Button[]{top_right_button, top_left_button, bot_right_button, bot_left_button}) {
+            button.setOnMousePressed(event -> button.setTranslateY(3));
+            button.setOnMouseReleased(event -> button.setTranslateY(0)); // очевидное
+        }
+
+        top_pane.setOnMousePressed(event -> {
+            x = event.getSceneX();
+            y = event.getSceneY();
+        });
+
+        top_pane.setOnMouseDragged(event -> {
+            Stage stage = (Stage) top_pane.getScene().getWindow();
+            stage.setX(event.getScreenX() - x);
+            stage.setY(event.getScreenY() - y);
+        });
+
+        hide_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
+        hide_button.getStyleClass().add("hide-button");
+
+        close_btn.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
+        close_btn.getStyleClass().add("close-button");
+
+        rect.setArcHeight(20);
+        rect.setArcWidth(20);
+        rect.setStroke(Color.GRAY);
+        rect.setStrokeWidth(2);
+        rect.setFill(Color.TRANSPARENT);
+
+        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("mtuci.png")));
+        ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(false);
+        imageView.setFitWidth(40);
+        imageView.setFitHeight(40);
+        imageView.setSmooth(true);
+        top_left_button.setGraphic(imageView);
+
+        gif_title.getStylesheets().add(Objects.requireNonNull(getClass().getResource("big_title.css")).toExternalForm());
+        gif_title.getStyleClass().add("large-text");
+        Text text = new Text("GIF");
+        gif_title.getChildren().add(text);
+
+        image_tr.setSmooth(true);
+        image_tr.setFitWidth(150);
+        image_tr.setFitHeight(150);
+
+        executor = Executors.newFixedThreadPool(2);
+        startSearchTasks();
     }
+
     @FXML
     public void onAdvancedSettings(ActionEvent event) {
         try {
@@ -180,15 +253,7 @@ public class Main extends Application {
 
     @FXML
     void brb(ActionEvent event) throws IOException {
-        FileChooser fileChooser = new FileChooser();
-        FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Видео", "*.mp4");
-        fileChooser.getExtensionFilters().add(imageFilter);
-
-        selectedFile = fileChooser.showOpenDialog(bot_left_button.getScene().getWindow());
-
-        if (selectedFile != null) {
-            if (LOG_ENABLED) LOGGER.log(Level.INFO, "Selected file: {0}", selectedFile.getAbsolutePath());
-        }
+        chooseFile();
     }
 
     @FXML
@@ -204,87 +269,6 @@ public class Main extends Application {
     @FXML
     void slider1OnClicked(MouseEvent event) {
         if (LOG_ENABLED) LOGGER.log(Level.INFO, "Slider1 value: {0}", slider1.getValue());
-    }
-
-    @FXML
-    private ImageView imagePreview;
-
-    public void initialize() {
-        apiService = new GopiApiService();
-        Image label1Image = new Image(String.valueOf(getClass().getResource("fps.png")));
-        ImageView label1 = new ImageView(label1Image);
-        label1.setFitWidth(35);
-        label1.setFitHeight(35);
-        label1.setTranslateY(-3);
-        roundButton1.setGraphic(label1);
-
-        Image label2Image = new Image(String.valueOf(getClass().getResource("bitrate.png")));
-        ImageView label2 = new ImageView(label2Image);
-        label2.setFitWidth(35);
-        label2.setFitHeight(35);
-        roundButton2.setGraphic(label2);
-
-        Image label3Image = new Image(String.valueOf(getClass().getResource("quality.png")));
-        ImageView label3 = new ImageView(label3Image);
-        label3.setFitWidth(30);
-        label3.setFitHeight(30);
-        roundButton3.setGraphic(label3);
-
-        Image preview = new Image(String.valueOf(getClass().getResource("draganddrop.png")));
-        imagePreview.setImage(preview);
-
-        for (Button button : new Button[]{top_right_button, top_left_button, bot_right_button, bot_left_button}){
-            button.setOnMousePressed(event -> button.setTranslateY(3));
-            button.setOnMouseReleased(event -> button.setTranslateY(0)); // очевидное
-        }
-
-        top_pane.setOnMousePressed(event -> {
-            x = event.getSceneX();
-            y = event.getSceneY();
-        });
-
-        top_pane.setOnMouseDragged(event -> {
-            Stage stage = (Stage) top_pane.getScene().getWindow();
-            stage.setX(event.getScreenX() - x);
-            stage.setY(event.getScreenY() - y);
-        });
-
-        hide_button.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
-        hide_button.getStyleClass().add("hide-button");
-
-        close_btn.getStylesheets().add(Objects.requireNonNull(getClass().getResource("styles.css")).toExternalForm());
-        close_btn.getStyleClass().add("close-button");
-
-        rect.setArcHeight(20);
-        rect.setArcWidth(20);
-        rect.setStroke(Color.GRAY);
-        rect.setStrokeWidth(2);
-        rect.setFill(Color.TRANSPARENT);
-
-        Image image = new Image(Objects.requireNonNull(getClass().getResourceAsStream("mtuci.png")));
-        ImageView imageView = new ImageView(image);
-        imageView.setPreserveRatio(false);
-        imageView.setFitWidth(40);
-        imageView.setFitHeight(40);
-        imageView.setSmooth(true);
-        top_left_button.setGraphic(imageView);
-
-        gif_title.getStylesheets().add(Objects.requireNonNull(getClass().getResource("big_title.css")).toExternalForm());
-        gif_title.getStyleClass().add("large-text");
-        Text text = new Text("GIF");
-        gif_title.getChildren().add(text);
-
-        image_tr.setSmooth(true);
-        image_tr.setFitWidth(150);
-        image_tr.setFitHeight(150);
-
-        executor = Executors.newFixedThreadPool(2);
-        startSearchTasks();
-    }
-
-    private void openAdvancedSettings(ActionEvent event) {
-        AdvancedSettingsWindow advancedSettingsWindow = new AdvancedSettingsWindow();
-        advancedSettingsWindow.display();
     }
 
     public static void main(String[] args) {
@@ -432,6 +416,79 @@ public class Main extends Application {
         executor.submit(uploadTask);
     }
 
+    public void chooseFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Video Files", "*.mp4", "*.avi", "*.mkv", "*.mov")
+        );
+
+        selectedFile = fileChooser.showOpenDialog(primaryStage);
+        if (selectedFile != null) {
+            // Отображаем название файла
+            Text titleText = new Text(selectedFile.getName());
+            titleText.setFill(Color.WHITE);
+            gif_title.getChildren().clear();
+            gif_title.getChildren().add(titleText);
+
+            // Показываем временную заглушку пока создается превью
+            Image placeholder = new Image(getClass().getResourceAsStream("video-placeholder.png"));
+            imagePreview.setImage(placeholder);
+
+            // Создаем превью в отдельном потоке
+            Task<Void> thumbnailTask = new Task<>() {
+                @Override
+                protected Void call() throws Exception {
+                    if (ffmpeg != null) {
+                        // Создаем временный файл для превью
+                        String thumbnailPath = System.getProperty("java.io.tmpdir") + "temp_thumb_" + 
+                                             System.currentTimeMillis() + ".jpg";
+                        File thumbnailFile = new File(thumbnailPath);
+                        
+                        try {
+                            // Команда для извлечения кадра
+                            ProcessBuilder pb = new ProcessBuilder(
+                                ffmpeg,
+                                "-i", selectedFile.getAbsolutePath(),
+                                "-vframes", "1",
+                                "-an",
+                                "-s", "264x372", // Размер как у imagePreview
+                                "-ss", "0",
+                                thumbnailPath
+                            );
+                            
+                            Process p = pb.start();
+                            p.waitFor(5, TimeUnit.SECONDS); // Ждем максимум 5 секунд
+
+                            // Загружаем и отображаем превью в UI потоке
+                            if (thumbnailFile.exists()) {
+                                Image thumbnail = new Image(thumbnailFile.toURI().toString());
+                                Platform.runLater(() -> imagePreview.setImage(thumbnail));
+                            }
+                        } finally {
+                            // Удаляем временный файл
+                            thumbnailFile.delete();
+                        }
+                    }
+                    return null;
+                }
+            };
+
+            // Обработка ошибок
+            thumbnailTask.setOnFailed(e -> {
+                LOGGER.log(Level.SEVERE, "Error creating video preview: " + 
+                          thumbnailTask.getException().getMessage());
+                // В случае ошибки показываем стандартное изображение
+                Platform.runLater(() -> {
+                    Image defaultImage = new Image(getClass().getResourceAsStream("draganddrop.png"));
+                    imagePreview.setImage(defaultImage);
+                });
+            });
+
+            // Запускаем задачу в пуле потоков
+            executor.submit(thumbnailTask);
+        }
+    }
+
     @Override
     public void stop() throws Exception {
         super.stop();
@@ -439,5 +496,4 @@ public class Main extends Application {
             executor.shutdownNow();
         }
     }
-
 }
