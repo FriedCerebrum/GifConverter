@@ -26,6 +26,9 @@ public class AdvancedSettingsController {
     }
 
     public void handleCancel(ActionEvent actionEvent) {
-        System.out.println("cancel");
+        // Получаем текущее окно через источник события
+        Stage stage = (Stage) ((Button) actionEvent.getSource()).getScene().getWindow();
+        // Закрываем окно
+        stage.close();
     }
 }
