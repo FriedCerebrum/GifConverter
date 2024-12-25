@@ -14,6 +14,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import javafx.stage.FileChooser;
@@ -427,6 +429,7 @@ public class Main extends Application {
             // Отображаем название файла
             Text titleText = new Text(selectedFile.getName());
             titleText.setFill(Color.WHITE);
+            titleText.setFont(Font.font("System", FontWeight.NORMAL, 12)); // Устанавливаем размер шрифта 12
             gif_title.getChildren().clear();
             gif_title.getChildren().add(titleText);
 
@@ -445,19 +448,22 @@ public class Main extends Application {
                         File thumbnailFile = new File(thumbnailPath);
                         
                         try {
-                            // Команда для извлечения кадра
+                            // Оптимизированная команда для быстрого извлечения кадра
                             ProcessBuilder pb = new ProcessBuilder(
                                 ffmpeg,
+                                "-ss", "0", // Перемещаем -ss перед -i для быстрого поиска
                                 "-i", selectedFile.getAbsolutePath(),
                                 "-vframes", "1",
                                 "-an",
-                                "-s", "264x372", // Размер как у imagePreview
-                                "-ss", "0",
+                                "-s", "264x372",
+                                "-f", "image2", // Принудительно указываем формат
+                                "-q:v", "2", // Высокое качество (2-31, где 2 - лучшее)
+                                "-y", // Перезаписывать файл без вопросов
                                 thumbnailPath
                             );
                             
                             Process p = pb.start();
-                            p.waitFor(5, TimeUnit.SECONDS); // Ждем максимум 5 секунд
+                            p.waitFor(3, TimeUnit.SECONDS); // Уменьшаем время ожидания
 
                             // Загружаем и отображаем превью в UI потоке
                             if (thumbnailFile.exists()) {
